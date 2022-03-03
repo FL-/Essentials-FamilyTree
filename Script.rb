@@ -20,7 +20,7 @@
 # - summary5
 #
 # -At PokemonDayCare, before line '$Trainer.party[$Trainer.party.length]=egg'
-# add line 'PokemonFamily.new(egg, father, mother)'
+# add line 'egg.family = PokemonFamily.new(egg, father, mother)'
 #
 # -At PokemonSummary, change both lines '@page=4 if @page>4'
 # to '@page=5 if @page>5'
@@ -33,7 +33,7 @@
 # -After line 'drawPageFive(@pokemon)' add
 #
 # when 5
-#   drawPageSix(@pokemon)
+#  drawPageSix(@pokemon)
 #
 #===============================================================================
 
@@ -43,7 +43,7 @@ class PokemonSummaryScene
   def drawPageSix(pokemon)
     overlay=@sprites["overlay"].bitmap
     overlay.clear
-    @sprites["background"].setBitmap(@pokemon.egg? ? 
+    @sprites["background"].setBitmap(@pokemon.isEgg? ? 
         "Graphics/Pictures/summaryEgg6" : "Graphics/Pictures/summary6")
     imagepos=[]
     if pbPokerus(pokemon)==1 || pokemon.hp==0 || @pokemon.status>0
@@ -73,14 +73,14 @@ class PokemonSummaryScene
       pokename=@pokemon.name[0..-2]
     end
     textpos=[
-       [_INTL("FAMILY TREE"),26,16,0,base,shadow],
-       [pokename,46,62,0,base,shadow],
-       [_INTL("Item"),16,320,0,base,shadow],
-       [itemname,16,352,0,Color.new(64,64,64),Color.new(176,176,176)],
+      [_INTL("FAMILY TREE"),26,16,0,base,shadow],
+      [pokename,46,62,0,base,shadow],
+      [_INTL("Item"),16,320,0,base,shadow],
+      [itemname,16,352,0,Color.new(64,64,64),Color.new(176,176,176)],
     ]
     textpos.push([_INTL("{1}",pokemon.level),46,92,0,
-           Color.new(64,64,64),Color.new(176,176,176)]) if !@pokemon.egg?
-    if !@pokemon.egg?
+          Color.new(64,64,64),Color.new(176,176,176)]) if !@pokemon.isEgg?
+    if !@pokemon.isEgg?
       if pokemon.gender==0
         textpos.push([_INTL("♂"),178,62,0,
             Color.new(24,112,216),Color.new(136,168,208)])
@@ -123,7 +123,7 @@ class PokemonSummaryScene
             [0,0,false,0,false]
         iconGrand=AnimatedBitmap.new(pbCheckPokemonIconFiles(iconGrandParam))
         overlay.blt(
-            grandX[j],68+parentsY[i],iconGrand.bitmap,Rect.new(0,0,64,64)) 
+            grandX[j],68+parentsY[i],iconGrand.bitmap,Rect.new(0,0,64,64))
       end
     end
     pbDrawTextPositions(overlay,textpos)
@@ -131,7 +131,7 @@ class PokemonSummaryScene
   end
   
   def handleInputsEgg
-    if SHOWFAMILYEGG && @pokemon.egg?
+    if SHOWFAMILYEGG && @pokemon.isEgg?
       if Input.trigger?(Input::LEFT) && @page==5
         @page=0 
         pbPlayCursorSE()
@@ -204,9 +204,9 @@ class PokemonFamily
   
   def [](value) # [0] = father, [1] = mother
     if value==0
-     return @father
+    return @father
     elsif value==1
-     return @mother
+    return @mother
     end
     return nil
   end
