@@ -6,7 +6,7 @@ This script is for Pokémon Essentials. It displays a sixth page at pokémon sum
 ![](Screens/screen2.png)
 
 ## Compatibility
-Doesn't work on Essentials versions older than v19. To see other Essentials versions, look at [all branches](../../branches/all).
+Doesn't work on Essentials versions older than v21.1. To see other Essentials versions, look at [all branches](../../branches/all).
 
 ## Installation
 Follow the [Script](/Script.rb) instructions. The sample script files are in [Files folder](/Files).
