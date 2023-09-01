@@ -9,4 +9,4 @@ This script is for Pokémon Essentials. It displays a sixth page at pokémon sum
 Doesn't work on Essentials versions older than v21.1. To see other Essentials versions, look at [all branches](../../branches/all).
 
 ## Installation
-Download from [https://github.com/abacaxi-queer/Essentials-FamilyTree/releases/download/v2.0/FamilyTree.zip](here) and extract the contents in your root game folder. This plugin requires the [https://reliccastle.com/resources/1325/](Modular UI Scenes) from Lucidious89. 
+Download from [here](https://github.com/abacaxi-queer/Essentials-FamilyTree/releases/download/v2.0/Family.Tree.zip) and extract the contents in your root game folder. This plugin requires the [Modular UI Scenes](https://reliccastle.com/resources/1325/) from Lucidious89. 
