@@ -1,5 +1,6 @@
 #===============================================================================
 # * Family Tree - by FL (Credits will be apreciated)
+#  updated to v21.1 by Eurritimia
 #===============================================================================
 #
 # This script is for Pokémon Essentials. It displays a sixth page at pokémon
@@ -8,26 +9,9 @@
 #
 #== INSTALLATION ===============================================================
 #
-# To this script works, put it above PSystem_System. 
-#
-# Put a 512x384 background for this screen in "Graphics/Pictures/Summary/" as 
-# "bg_6" and as "bg_6_egg". This last one is only necessary if SHOW_FAMILY_EGG
-# is true. You also need to update the below pictures on same folder in order
-# to reflect the summary icon change:
-# - bg_1
-# - bg_2
-# - bg_3
-# - bg_4
-# - bg_movedetail
-# - bg_5
-#
-# - At PScreen_Summary, change both lines '@page = 5 if @page>5'
-# to '@page=6 if @page>6'
-#
-# - Change line '_INTL("RIBBONS")][page-1]' into:
-#
-# _INTL("RIBBONS"),
-# _INTL("FAMILY TREE")][page-1]
+# No need to add that many files, now only bg_family_tree.png and 
+# page_family_tree.png are needed in Graphics/UI/Summary. It requires Modular 
+# UI Scenes from Lucidious89, however.
 #
 #== NOTES ======================================================================
 #
@@ -35,115 +19,30 @@
 #
 #===============================================================================
 
-if !PluginManager.installed?("Family Tree")
-  PluginManager.register({                                                 
-    :name    => "Family Tree",                                        
-    :version => "1.3",                                                     
-    :link    => "https://www.pokecommunity.com/showthread.php?t=339384",             
-    :credits => "FL"
-  })
-end
+UIHandlers.add(:summary, :page_family, {
+  "name"      => "FAMILY TREE",
+  "suffix"    => "family_tree",
+  "order"     => 60,
+  "layout"    => proc { |pkmn, scene| scene.drawPageFamily }
+})
+
+UIHandlers.add(:summary, :page_family_egg, {
+  "name"      => "FAMILY TREE",
+  "suffix"    => "family_tree",
+  "order"     => 60,
+  "onlyEggs"  => true,
+  "condition" => proc { next PokemonSummary_Scene::SHOW_FAMILY_EGG },
+  "layout"    => proc { |pkmn, scene| scene.drawPageFamily }
+})
 
 class PokemonSummary_Scene
   SHOW_FAMILY_EGG = true # when true, family tree is also showed in egg screen.
 
-  alias :_pbChangePokemon_FL_fam :pbChangePokemon
-  def pbChangePokemon
-    _pbChangePokemon_FL_fam
-    if SHOW_FAMILY_EGG && @pokemon.egg? && @page==6
-      @ignore_refresh=true
-      drawPageSix
-    end
-  end
-
-  def pbGoToPrevious
-    newindex = @partyindex
-    while newindex>0
-      newindex -= 1
-      if @party[newindex] && (@page==1 || !@party[newindex].egg? || (
-        @page==6 && SHOW_FAMILY_EGG
-      )) 
-        @partyindex = newindex
-        break
-      end
-    end
-  end
-
-  def pbGoToNext
-    newindex = @partyindex
-    while newindex<@party.length-1
-      newindex += 1
-      if @party[newindex] && (@page==1 || !@party[newindex].egg? || (
-        @page==6 && SHOW_FAMILY_EGG
-      ))
-        @partyindex = newindex
-        break
-      end
-    end
-  end
-
-  alias :_drawPage_FL_fam :drawPage
-  def drawPage(page)
-    if @ignore_refresh
-      @ignore_refresh = false
-      return
-    end
-    _drawPage_FL_fam(page)
-    drawPageSix if page==6
-  end
-
-  alias :_pbUpdate_FL_fam :pbUpdate
-  def pbUpdate
-    _pbUpdate_FL_fam
-    if SHOW_FAMILY_EGG && @pokemon.egg?
-      if Input.trigger?(Input::LEFT) && @page==6
-        @page=1
-        pbPlayCursorSE()
-        dorefresh=true
-      end
-      if Input.trigger?(Input::RIGHT) && @page==1
-        @page=6
-        pbPlayCursorSE()
-        dorefresh=true
-      end
-    end
-    if dorefresh
-      case @page
-        when 1; drawPageOneEgg
-        when 6; drawPageSix
-      end
-    end
-  end
-
-  def drawPageSix
+  def drawPageFamily
     overlay=@sprites["overlay"].bitmap
     base=Color.new(248,248,248)
     shadow=Color.new(104,104,104)
-    textpos=[]
-    if @pokemon.egg?
-      overlay.clear
-      pbSetSystemFont(overlay)
-      @sprites["background"].setBitmap("Graphics/Pictures/Summary/bg_6_egg")
-      ballimage = sprintf(
-        "Graphics/Pictures/Summary/icon_ball_%s", @pokemon.poke_ball
-      )
-      if !pbResolveBitmap(ballimage)
-        ballimage = sprintf(
-          "Graphics/Pictures/Summary/icon_ball_%02d", 
-          pbGetBallType(@pokemon.poke_ball)
-        )
-      end
-      pbDrawImagePositions(overlay,[[ballimage,14,60,0,0,-1,-1]])
-      textpos=[
-         [_INTL("TRAINER MEMO"),26,10,0,base,shadow],
-         [@pokemon.name,46,56,0,base,shadow],
-         [_INTL("Item"),66,312,0,base,shadow]
-      ]
-      textpos.push([
-        _INTL("None"),16,346,0,Color.new(192,200,208),Color.new(208,216,224)
-      ])
-      drawMarkings(overlay,84,292)
-    end  
+    textpos=[]    
     # Draw parents
     parents_y = [78,234]
     for i in 0...2
@@ -260,21 +159,42 @@ class Pokemon
   attr_accessor :family
 end
 
-alias :_pbDayCareGenerateEgg_FL_fam :pbDayCareGenerateEgg
-def pbDayCareGenerateEgg
-  _pbDayCareGenerateEgg_FL_fam
-  pkmn0 = $PokemonGlobal.daycare[0][0]
-  pkmn1 = $PokemonGlobal.daycare[1][0]
-  mother = nil
-  father = nil
-  if pkmn0.female? || pbIsDitto?(pkmn0)
-    mother = pkmn0
-    father = pkmn1
-  else
-    mother = pkmn1
-    father = pkmn0
-  end
-  $Trainer.party[-1].family = PokemonFamily.new(
-    $Trainer.party[-1], father, mother
-  )
+class DayCare
+	module EggGenerator
+		module_function
+
+		def generate(mother, father)
+		  # Determine which Pokémon is the mother and which is the father
+		  # Ensure mother is female, if the pair contains a female
+		  # Ensure father is male, if the pair contains a male
+		  # Ensure father is genderless, if the pair is a genderless with Ditto
+		  if mother.male? || father.female? || mother.genderless?
+			mother, father = father, mother
+		  end
+		  mother_data = [mother, mother.species_data.egg_groups.include?(:Ditto)]
+		  father_data = [father, father.species_data.egg_groups.include?(:Ditto)]
+		  # Determine which parent the egg's species is based from
+		  species_parent = (mother_data[1]) ? father : mother
+		  # Determine the egg's species
+		  baby_species = determine_egg_species(species_parent.species, mother, father)
+		  mother_data.push(mother.species_data.breeding_can_produce?(baby_species))
+		  father_data.push(father.species_data.breeding_can_produce?(baby_species))
+		  # Generate egg
+		  egg = generate_basic_egg(baby_species)
+		  # Inherit properties from parent(s)
+		  inherit_form(egg, species_parent, mother_data, father_data)
+		  inherit_nature(egg, mother, father)
+		  inherit_ability(egg, mother_data, father_data)
+		  inherit_moves(egg, mother_data, father_data)
+		  inherit_IVs(egg, mother, father)
+		  inherit_poke_ball(egg, mother_data, father_data)
+		  # Calculate other properties of the egg
+		  set_shininess(egg, mother, father)   # Masuda method and Shiny Charm
+		  set_pokerus(egg)
+		  # Recalculate egg's stats
+		  egg.calc_stats
+		  egg.family = PokemonFamily.new(egg, mother, father)
+		  return egg
+		end
+	end
 end
